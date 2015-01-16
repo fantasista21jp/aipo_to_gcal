@@ -1,0 +1,22 @@
+{
+    "name": "fantasista21jp/aipo_to_gcal",
+    "type": "library",
+    "description": "Aipo to Google Calendar",
+    "license": "LGPL-2.1",
+    "authors": [
+        {
+            "name": "Tom Shimada",
+            "email": "info@fantasista21jp.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/iCalcreator/iCalcreator"
+        }
+    ],
+    "require": {
+        "google/apiclient": "*",
+        "kigkonsult/icalcreator": "dev-master"
+    }
+}

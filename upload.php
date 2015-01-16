@@ -1,8 +1,7 @@
 #!/usr/bin/php
 <?php
 
-require_once 'google-api-php-client/src/Google/Client.php';
-require_once 'iCalcreator/iCalcreator.class.php';
+require 'vendor/autoload.php';
 
 require_once 'configs.php';
 

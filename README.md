@@ -1,5 +1,14 @@
 # Aipo to Google Calendar
 
+## Install
+
+```
+git clone git@github.com:fantasista21jp/aipo_to_gcal.git
+cd aipo_to_gcal
+git clone git@github.com:google/google-api-php-client.git
+git clone git@github.com:iCalcreator/iCalcreator.git
+```
+
 ## Setting
 
 ### upload.php

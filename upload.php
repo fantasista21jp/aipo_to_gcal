@@ -8,12 +8,19 @@ require_once 'configs.php';
 $scopes = array('https://www.googleapis.com/auth/calendar');
 
 // iCal データ取得
-$icalContents = file_get_contents($aipoIcal);
+$client = new GuzzleHttp\Client();
+$clientRes = $client->get($aipoIcalUrl, ['auth' =>  [$aipoUser, $aipoPasswd]]);
+if ($clientRes->getStatusCode() != 200) {
+    echo 'Authorization Required' . "\n";
+    exit(1);
+}
+$icalContents = $clientRes->getBody();
+
 $ical = new vcalendar();
-$res = $ical->parse($icalContents);
+$icalRes = $ical->parse($icalContents);
 
 $aipoEvents = array();
-if ($res == true) {
+if ($icalRes == true) {
     foreach ($ical->components as $key => $event) {
         $summary = $event->getProperty('summary');
         if (!$summary) {

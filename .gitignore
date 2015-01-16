@@ -1,4 +1,5 @@
 /vendor
 .tags
 .tags_sorted_by_file
-
+*.p12
+composer.lock

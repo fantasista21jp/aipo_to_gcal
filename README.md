@@ -10,7 +10,7 @@ composer install
 
 ## Setting
 
-### upload.php
+### configs.php
 
 ```
 $clientId = 'Your Client ID';

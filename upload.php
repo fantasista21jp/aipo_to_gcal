@@ -47,7 +47,49 @@ if ($icalRes == true) {
             $end->setDateTime($dtend['year'] . '-' . sprintf('%02d', $dtend['month']) . '-' . sprintf('%02d', $dtend['day']) . 'T' . $dtend['hour'] . ':' . $dtend['min'] . ':' . $dtend['sec'] . '+09:00');
         }
 
-        $aipoEvent = compact('summary', 'dtstamp', 'dtstart', 'dtend', 'uid', 'aipoId', 'start', 'end');
+        $recurrence = array();
+
+        $exdate = $event->getProperty('exdate');
+        if (!empty($exdate)) {
+            $exdateText = 'EXDATE;TZID=Asia/Tokyo:';
+            $exdateLists = array();
+            foreach ($exdate as $value) {
+                $exdateLists[] = $value['year'] . sprintf('%02d', $value['month']) . sprintf('%02d', $value['day']) . 'T' . $value['hour'] . $value['min'] . $value['sec'];
+            }
+            asort($exdateLists);
+            $exdateText .= implode($exdateLists, ',');
+            $recurrence[] = $exdateText;
+        }
+
+        $rrule = $event->getProperty('rrule');
+        if (!empty($rrule)) {
+            $rruleText = 'RRULE:';
+            $rruleLists = array();
+            $rruleLists[] = 'FREQ=' . $rrule['FREQ'];
+            $rruleLists[] = 'UNTIL=' . $rrule['UNTIL']['year'] . sprintf('%02d', $rrule['UNTIL']['month']) . sprintf('%02d', $rrule['UNTIL']['day']) . 'T' . $rrule['UNTIL']['hour'] . $rrule['UNTIL']['min'] . $rrule['UNTIL']['sec'] . $rrule['UNTIL']['tz'];
+            switch ($rrule['FREQ']) {
+                case 'DAILY':
+                    break;
+                case 'WEEKLY':
+                    $rruleLists[] = 'BYDAY=' . implode($rrule['BYDAY'],',');
+                    break;
+                case 'MONTHLY':
+                    $rruleLists[] = 'BYMONTH=' . implode($rrule['BYMONTH'],',');
+                    $rruleLists[] = 'BYMONTHDAY=' . $rrule['BYMONTHDAY'];
+                    break;
+            }
+            $rruleText .= implode($rruleLists, ';');
+            $recurrence[] = $rruleText;
+        }
+
+        if (!empty($recurrence)) {
+            $start['timeZone'] = 'Asia/Tokyo';
+            $end['timeZone'] = 'Asia/Tokyo';
+        } else {
+            $recurrence = null;
+        }
+
+        $aipoEvent = compact('summary', 'dtstamp', 'dtstart', 'dtend', 'uid', 'aipoId', 'start', 'end', 'recurrence');
         $aipoEvents[$aipoId] = $aipoEvent;
     }
 }
@@ -79,12 +121,13 @@ foreach ($calendarLists['items'] as $key => $calendar) {
             $summary = $event->getSummary();
             $start = $event->getStart();
             $end = $event->getEnd();
+            $recurrence = $event->getRecurrence();
 
             // aipo にデータがない場合は削除
             if (empty($aipoEvents[$aipoId])) {
                 // 直近3ヶ月の情報だけ消す
                 // ※ aipo の ical が直近3ヶ月前までのデータなので
-                if (strtotime('- 3month') < strtotime($start->date ? $start->date : $start->dateTime)) {
+                if (strtotime('- 3month') < strtotime($start->date ? $start->date : $start->dateTime) || !empty($recurrence)) {
                     // 削除処理
                     $service->events->delete($calenderId , $eventId);
                     echo '[Delete Event]' . ':' . $summary . ' (' . ($start->date ? $start->date : $start->dateTime) . ')' . "\n";
@@ -93,6 +136,19 @@ foreach ($calendarLists['items'] as $key => $calendar) {
             }
             $aipoEvent = $aipoEvents[$aipoId];
 
+            $recurrence_diff = false;
+            if (gettype($aipoEvent['recurrence']) != gettype($recurrence)) {
+                $recurrence_diff = true;
+            } elseif (is_array($aipoEvent['recurrence']) && is_array($recurrence)) {
+                if (array_diff($aipoEvent['recurrence'], $recurrence)) {
+                    $recurrence_diff = true;
+                }
+            } else {
+                if ($aipoEvent['recurrence'] != $recurrence) {
+                    $recurrence_diff = true;
+                }
+            }
+
             // 登録データに差異があれば削除
             if ($aipoEvent['summary'] != $summary
                 || $aipoEvent['start']->date != $start->date
@@ -100,7 +156,9 @@ foreach ($calendarLists['items'] as $key => $calendar) {
                 || $aipoEvent['start']->timeZone != $start->timeZone
                 || $aipoEvent['end']->date != $end->date
                 || $aipoEvent['end']->dateTime != $end->dateTime
-                || $aipoEvent['end']->timeZone != $end->timeZone) {
+                || $aipoEvent['end']->timeZone != $end->timeZone
+                || $recurrence_diff == true
+                ) {
                 // 削除処理
                 $service->events->delete($calenderId , $eventId);
                 echo '[Delete Event]' . ':' . $summary . ' (' . ($start->date ? $start->date : $start->dateTime) . ')' . "\n";
@@ -127,6 +185,7 @@ foreach ($calendarLists['items'] as $key => $calendar) {
             $event->setSummary($aipoEvent['summary']);
             $event->setStart($aipoEvent['start']);
             $event->setEnd($aipoEvent['end']);
+            $event->setRecurrence($aipoEvent['recurrence']);
             $event->setICalUID($aipoEvent['uid']);
             $service->events->insert($calenderId, $event);
             echo '[Insert Event]' . ':' . $aipoEvent['summary'] . ' (' . ($aipoEvent['start']->date ? $aipoEvent['start']->date : $aipoEvent['start']->dateTime) . ')' . "\n";

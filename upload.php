@@ -71,7 +71,15 @@ if ($icalRes == true) {
                 case 'DAILY':
                     break;
                 case 'WEEKLY':
-                    $rruleLists[] = 'BYDAY=' . implode($rrule['BYDAY'],',');
+                    if (isset($rrule['BYDAY']['DAY'])) {
+                        $rruleLists[] = 'BYDAY=' . $rrule['BYDAY']['DAY'];
+                    } else {
+                        $bydays = array();
+                        foreach($rrule['BYDAY'] as $byday) {
+                            $bydays[] = $byday['DAY'];
+                        }
+                        $rruleLists[] = 'BYDAY=' . implode($bydays,',');
+                    }
                     break;
                 case 'MONTHLY':
                     $rruleLists[] = 'BYMONTH=' . implode($rrule['BYMONTH'],',');

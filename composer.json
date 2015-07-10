@@ -10,8 +10,11 @@
         }
     ],
     "require": {
-        "google/apiclient": "*",
+        "google/apiclient": "1.1.2",
+        "guzzlehttp/guzzle": "5.1.0",
+        "guzzlehttp/ringphp": "1.0.5",
+        "guzzlehttp/streams": "3.0.0",
         "kigkonsult/icalcreator": "dev-master",
-        "guzzlehttp/guzzle": "*"
+        "react/promise": "v2.2.0"
     }
 }

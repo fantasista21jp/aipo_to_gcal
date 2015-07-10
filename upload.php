@@ -27,24 +27,24 @@ if ($icalRes == true) {
             continue;
         }
         $dtstamp = $event->getProperty('dtstamp');
-        $dtstart = $event->getProperty('dtstart');
-        $dtend = $event->getProperty('dtend');
+        $dtstart = $event->getProperty('dtstart', 0, true);
+        $dtend = $event->getProperty('dtend', 0, true);
         $uid = $event->getProperty('uid');
         preg_match(('/^([0-9A-Za-z]+)-([0-9]+)\@(.+?)$/'), $uid, $matches);
         $aipoId = $matches[2];
 
         $start = new Google_Service_Calendar_EventDateTime();
-        if (!empty($event->dtstart['params']) && $event->dtstart['params']['VALUE'] == 'DATE') {
-            $start->setDate($dtstart['year'] . '-' . sprintf('%02d', $dtstart['month']) . '-' . sprintf('%02d', $dtstart['day']));
+        if (!empty($dtstart['params']) && $dtstart['params']['VALUE'] == 'DATE') {
+            $start->setDate($dtstart['value']['year'] . '-' . sprintf('%02d', $dtstart['value']['month']) . '-' . sprintf('%02d', $dtstart['value']['day']));
         } else {
-            $start->setDateTime($dtstart['year'] . '-' . sprintf('%02d', $dtstart['month']) . '-' . sprintf('%02d', $dtstart['day']) . 'T' . $dtstart['hour'] . ':' . $dtstart['min'] . ':' . $dtstart['sec'] . '+09:00');
+            $start->setDateTime($dtstart['value']['year'] . '-' . sprintf('%02d', $dtstart['value']['month']) . '-' . sprintf('%02d', $dtstart['value']['day']) . 'T' . $dtstart['value']['hour'] . ':' . $dtstart['value']['min'] . ':' . $dtstart['value']['sec'] . '+09:00');
         }
 
         $end = new Google_Service_Calendar_EventDateTime();
-        if (!empty($event->dtend['params']) && $event->dtend['params']['VALUE'] == 'DATE') {
-            $end->setDate($dtend['year'] . '-' . sprintf('%02d', $dtend['month']) . '-' . sprintf('%02d', $dtend['day']));
+        if (!empty($dtend['params']) && $dtend['params']['VALUE'] == 'DATE') {
+            $end->setDate($dtend['value']['year'] . '-' . sprintf('%02d', $dtend['value']['month']) . '-' . sprintf('%02d', $dtend['value']['day']));
         } else {
-            $end->setDateTime($dtend['year'] . '-' . sprintf('%02d', $dtend['month']) . '-' . sprintf('%02d', $dtend['day']) . 'T' . $dtend['hour'] . ':' . $dtend['min'] . ':' . $dtend['sec'] . '+09:00');
+            $end->setDateTime($dtend['value']['year'] . '-' . sprintf('%02d', $dtend['value']['month']) . '-' . sprintf('%02d', $dtend['value']['day']) . 'T' . $dtend['value']['hour'] . ':' . $dtend['value']['min'] . ':' . $dtend['value']['sec'] . '+09:00');
         }
 
         $recurrence = array();

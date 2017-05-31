@@ -26,6 +26,7 @@ if ($icalRes == true) {
         if (!$summary) {
             continue;
         }
+        $description = str_replace("\\n", "\n", $event->getProperty('description'));
         $dtstamp = $event->getProperty('dtstamp');
         $dtstart = $event->getProperty('dtstart', 0, true);
         $dtend = $event->getProperty('dtend', 0, true);
@@ -97,7 +98,7 @@ if ($icalRes == true) {
             $recurrence = null;
         }
 
-        $aipoEvent = compact('summary', 'dtstamp', 'dtstart', 'dtend', 'uid', 'aipoId', 'start', 'end', 'recurrence');
+        $aipoEvent = compact('summary', 'description', 'dtstamp', 'dtstart', 'dtend', 'uid', 'aipoId', 'start', 'end', 'recurrence');
         $aipoEvents[$aipoId] = $aipoEvent;
     }
 }
@@ -127,6 +128,7 @@ foreach ($calendarLists['items'] as $key => $calendar) {
             preg_match(('/^([0-9A-Za-z]+)-([0-9]+)\@(.+?)$/'), $icalUid, $matches);
             $aipoId = $matches[2];
             $summary = $event->getSummary();
+            $description = $event->getDescription();
             $start = $event->getStart();
             $end = $event->getEnd();
             $recurrence = $event->getRecurrence();
@@ -159,6 +161,7 @@ foreach ($calendarLists['items'] as $key => $calendar) {
 
             // 登録データに差異があれば削除
             if ($aipoEvent['summary'] != $summary
+                || $aipoEvent['description'] != $description
                 || $aipoEvent['start']->date != $start->date
                 || $aipoEvent['start']->dateTime != $start->dateTime
                 || $aipoEvent['start']->timeZone != $start->timeZone
@@ -191,6 +194,7 @@ foreach ($calendarLists['items'] as $key => $calendar) {
         foreach ($aipoEvents as $aipoEvent) {
             $event = new Google_Service_Calendar_Event();
             $event->setSummary($aipoEvent['summary']);
+            $event->setDescription($aipoEvent['description']);
             $event->setStart($aipoEvent['start']);
             $event->setEnd($aipoEvent['end']);
             $event->setRecurrence($aipoEvent['recurrence']);

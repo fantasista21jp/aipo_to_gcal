@@ -198,7 +198,7 @@ foreach ($calendarLists['items'] as $key => $calendar) {
             $event = new Google_Service_Calendar_Event();
             $event->setSummary($aipoEvent['summary']);
             $event->setDescription($aipoEvent['description']);
-            $event->setLocation($aipoEvent['location']);
+            if ($aipoEvent['location'] !== false) $event->setLocation($aipoEvent['location']);
             $event->setStart($aipoEvent['start']);
             $event->setEnd($aipoEvent['end']);
             $event->setRecurrence($aipoEvent['recurrence']);

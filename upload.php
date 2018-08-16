@@ -84,8 +84,12 @@ if ($icalRes == true) {
                     }
                     break;
                 case 'MONTHLY':
-                    $rruleLists[] = 'BYMONTH=' . implode($rrule['BYMONTH'],',');
-                    $rruleLists[] = 'BYMONTHDAY=' . $rrule['BYMONTHDAY'];
+                    if (isset($rrule['BYMONTH'])) {
+                        $rruleLists[] = 'BYMONTH=' . implode($rrule['BYMONTH'],',');
+                        $rruleLists[] = 'BYMONTHDAY=' . $rrule['BYMONTHDAY'];
+                    } else {
+                        $rruleLists[] = 'BYDAY=' . implode($rrule['BYDAY'],'');
+                    }
                     break;
             }
             $rruleText .= implode($rruleLists, ';');
